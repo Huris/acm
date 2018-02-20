@@ -52,10 +52,12 @@ template <typename T>inline void we(T x){
 
 
 
+
+
 struct node
 {
     int x,y;
-}le[503],cz[503];
+}a[503],b[503];
 bool cmp1(node a,node b)
 {
     return a.x!=b.x?a.x<b.x:a.y<b.y;
@@ -64,50 +66,49 @@ bool cmp2(node a,node b)
 {
     return a.y!=b.y?a.y<b.y:a.x<b.x;
 }
-int m[503],cnt;
-int n,e;
-int getcnt(int l,int a)
+int e,n;
+
+int getcnt(int l,int mid)
 {
-    int r=l+a-1;
-    cnt=0;
+    int r=l+mid-1;
+    int cnt=0;
+    int m[505];
     for(int i=1;i<=n;i++)
     {
-        if(cz[i].x<=r&&cz[i].x>=l)
-            m[++cnt]=cz[i].y;
+        if(b[i].x>=l&&b[i].x<=r)
+            m[cnt++]=b[i].y;
     }
-    int p1=1,p2=1;
-    while(m[p2]-m[p1]+1<=a&&p2<=cnt)p2++;
-    if(p2>cnt||m[p2]-m[p1]+1>a)p2--;
+    int p1=0,p2=0;
+    while(m[p2]-m[p1]+1<=mid&&p2<cnt)p2++;
+    if(p2>=cnt||m[p2]-m[p1]+1>mid)p2--;
+    //一定要注意这里！指针有可能滚过头了，还要让她滚回来！！！
     int ans=0;
-    while(p1<=p2&&p2<=cnt)
+    while(p1<=p2&&p2<cnt)  //尺取法
     {
-        ans=max(ans,p2-p1+1);
+        ans=max(ans,p2-p1+1);  //p2 - p1 + 1就是包含的点数
         p2++;
-        while(m[p2]-m[p1]+1>a)p1++;
+        while(m[p2]-m[p1]+1>mid)p1++; //根据p2滚动p1
     }
     return ans;
 }
-int check(int mid)
+int check(int mid)  //枚举每一个点并求出[L, L + mid]的最大点数
 {
     for(int i=1;i<=n;i++)
-    {
-        if(getcnt(le[i].x,mid)>=e)
+        if(getcnt(a[i].x,mid)>=e)
             return 1;
-    }
     return 0;
 }
 int main()
 {
-    rd(e);rd(n);
-    int x,y;
+     rd(e);rd(n);
     for(int i=1;i<=n;i++)
     {
-        rd(le[i].x);rd(le[i].y);
-        cz[i]=le[i];
+        rd(a[i].x);rd(a[i].y);
+        b[i]=a[i];
     }
-    sort(le+1,le+1+n,cmp1);
-    sort(cz+1,cz+1+n,cmp2);
-    int l=0,r=10003;
+    sort(a+1,a+n+1,cmp1);
+    sort(b+1,b+n+1,cmp2);
+    int l=0,r=10004;
     while(l<r)
     {
         int mid=l+r>>1;
