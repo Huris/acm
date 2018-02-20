@@ -51,9 +51,6 @@ template <typename T>inline void we(T x){
 }
 
 
-
-
-
 struct node
 {
     int x,y;
@@ -80,14 +77,13 @@ int getcnt(int l,int mid)
     }
     int p1=0,p2=0;
     while(m[p2]-m[p1]+1<=mid&&p2<cnt)p2++;
-    if(p2>=cnt||m[p2]-m[p1]+1>mid)p2--;
-    //一定要注意这里！指针有可能滚过头了，还要让她滚回来！！！
-    int ans=0;
+    p2--;   //p2要减1,即p2为满足条件下的最大
+    int ans=-1;
     while(p1<=p2&&p2<cnt)  //尺取法
     {
         ans=max(ans,p2-p1+1);  //p2 - p1 + 1就是包含的点数
         p2++;
-        while(m[p2]-m[p1]+1>mid)p1++; //根据p2滚动p1
+        while(m[p2]-m[p1]+1>mid&&p1<=p2)p1++; //根据p2滚动p1
     }
     return ans;
 }
