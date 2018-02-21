@@ -10,110 +10,97 @@
   c)	如果式中数字为多位数,并且表达式是使用字符串逐字符存储的,我们只需要稍加判断,把连续的一段数字看成一个数即可
 
 
-#pragma comment(linker,"/STACK:102400000,102400000")
-#include <iostream>
-#include <stdio.h>
-#include <string.h>
-#include <string>
-#include <list>
-#include <math.h>
-#include <vector>
-#include <algorithm>
-#include <time.h>
-#include <map>
-#include <set>
-#include <stack>
-#include <stdlib.h>
-#include <ctype.h>
-#include <queue>
-#include <bitset>
-#include<cassert>
-using namespace std;
-#define ll long long
-#define ull unsigned long long
-#define PI acos(-1.0)
-#define E 2.7182818284590452353602874713527
-#define bg(x) cout<<x<<"@@@"<<endl
-#define lowbit(x) ((x)&(-(x)))
-#define inf 0x3f3f3f3f
-#define pii pair<int,int>
-template <typename T>inline void rd(T &x) {
-    char c=getchar();int s=1;
-    while(c!='-'&&!isdigit(c))c=getchar();
-    if(c=='-')s=-1,x=0;else x=c-'0';
-    while(c=getchar(),isdigit(c))x=x*10+c-'0';x*=s;
-}
-template <typename T>inline void wd(T x){
-    if(x/10)wd(x/10);putchar(x%10+'0');
-}
-template <typename T>inline void we(T x){
-    if(x<0)x=-x,putchar('-');wd(x);putchar('\n');
-}
+// 数值栈
+vector<int> nums;
+// 运算符栈
+vector<char> ops;
 
-
-
-
-int main() {
-    string s;
-    while(cin>>s)
-    {
-        int i,l=s.size();
-        stack<char >q;
-        int sum=0;
-        for(i=0;i<l;i++)
-        {
-            if(isdigit(s[i])){
-                sum=sum*10+s[i]-'0';
-            }
-            else
-            {
-                if(sum!=0)
-                {
-                    printf("%d ",sum);
-                    sum=0;
-                }
-             if(s[i]=='(')
-                q.push(s[i]);
-            else if(s[i]==')')
-            {
-                while(q.top()!='(')
-                {
-                    printf("%c ",q.top());
-                    q.pop();
-                }
-                q.pop();
-            }
-            else
-            {
-                if(s[i]=='*'||s[i]=='/')
-                {
-                    while(q.size()&&(q.top()=='*'||q.top()=='/'))
-                    {
-                        printf("%c ",q.top());
-                        q.pop();
-                    }
-                    q.push(s[i]);
-                }
-                else if(s[i]=='+'||s[i]=='-')
-                {
-
-                    while(q.size()&&(q.top()=='+'||q.top()=='-'||q.top()=='*'||q.top()=='/'))
-                    {
-                        printf("%c ",q.top());
-                        q.pop();
-                    }
-                    q.push(s[i]);
-                }
-
-            }}
-        }
-        if(sum!=0)
-            printf("%d ",sum);
-        while(q.size())
-        {
-            printf("%c ",q.top());
-            q.pop();
-        }
-        printf("\n");
+// 优先级
+int grade(char op) {
+    switch (op) {
+        case '(':
+            return 1;
+        case '+':
+        case '-':
+            return 2;
+        case '*':
+        case '/':
+            return 3;
     }
+    return 0;
+}
+
+// 处理后缀表达式中的一个运算符
+void calc(char op) {
+    // 从栈顶取出两个数
+    int y = *nums.rbegin();
+    nums.pop_back();
+    int x = *nums.rbegin();
+    nums.pop_back();
+    int z;
+    switch (op) {
+        case '+':
+            z = x + y;
+            break;
+        case '-':
+            z = x - y;
+            break;
+        case '*':
+            z = x * y;
+            break;
+        case '/':
+            z = x / y;
+            break;
+    }
+    // 把运算结果放回栈中
+    nums.push_back(z);
+}
+
+// 中缀表达式转后缀表达式，同时对后缀表达式求值
+int solve(string s) {
+    nums.clear();
+    ops.clear();
+    int top = 0, val = 0;
+    for (int i = 0; i < s.size(); i++) {
+        // 中缀表达式的一个数字
+        if (s[i] >= '0' && s[i] <= '9') {
+            val = val * 10 + s[i] - '0';
+            if (s[i+1] >= '0' && s[i+1] <= '9') continue;
+            // 后缀表达式的一个数，直接入栈
+            nums.push_back(val);
+            val = 0;
+        }
+            // 中缀表达式的左括号
+        else if (s[i] == '(') ops.push_back(s[i]);
+            // 中缀表达式的右括号
+        else if (s[i] == ')') {
+            while (*ops.rbegin() != '(') {
+                // 处理后缀表达式的一个运算符
+                calc(*ops.rbegin());
+                ops.pop_back();
+            }
+            ops.pop_back();
+        }
+            // 中缀表达式的加减乘除号
+        else {
+            while (ops.size() && grade(*ops.rbegin()) >= grade(s[i])) {
+                calc(*ops.rbegin());
+                ops.pop_back();
+            }
+            ops.push_back(s[i]);
+        }
+    }
+    while (ops.size()) {
+        calc(*ops.rbegin());
+        ops.pop_back();
+    }
+    // 后缀表达式栈中最后剩下的数就是答案
+    return *nums.begin();
+}
+int main()
+{
+    string s;
+    cin>>s;
+    we(solve(s));
+
 }
