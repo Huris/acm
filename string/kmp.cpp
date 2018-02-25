@@ -27,21 +27,23 @@ kmp算法
           cin>>s>>t;
           int l1=s.size(),l2=t.size();
           int cnt=0;
-          nex[0]=f[0]=-1;
-          for(int i=1,j=-1;i<l1;i++)
+          nex[0]=-1;
+          for(int i=1,j=-1;i<l1;i++)		//从第2个字符开始找,j初始化为-1
           {
-              while(~j&&s[i]!=s[j+1])j=nex[j];
-              if(s[i]==s[j+1])j++;
-              nex[i]=j;
-          }
-          for(int i=1,j=-1;i<l2;i++)
-          {
-              while(~j&&(j==l1-1||t[i]!=s[j+1]))j=nex[j];
-              if(t[i]==s[j+1])j++;
-              f[i]=j;
-              if(f[i]==l1-1){
-                  cnt++;
-              }// 匹配成功,此时t[i]=s[l1-1]
-          }
-          we(cnt);
-      }
+                while(~j&&s[i]!=s[j+1])j=nex[j];	//如果找不到,则从nex[j]去找
+                if(s[i]==s[j+1])j++;	//如果第i个相等,则令j++;
+                nex[i]=j;			//把j赋值给nex[i]
+            }
+            for(int i=0,j=-1;i<l2;i++)	//模式串从0开始匹配
+            {
+                while(~j&&(j==l1-1||t[i]!=s[j+1]))j=nex[j];//如果找不到或者已经找到
+                if(t[i]==s[j+1])j++;  //如果第i个相等,令j++
+                f[i]=j;			//把j赋值给f[i]
+                if(f[i]==l1-1){	//当f[i]=l1-1,说明找到,则进行操作
+                    we(i-l1+1);  //下标从0开始的匹配位置
+                    cnt++;
+                }// 匹配成功,此时t[i]=s[l1-1],即从i-l1+1开始匹配
+            }
+            we(cnt);
+        }
+
