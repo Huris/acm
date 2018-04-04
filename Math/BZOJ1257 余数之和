@@ -1,0 +1,40 @@
+
+
+//地址:https://www.lydsy.com/JudgeOnline/problem.php?id=1257
+//题意:给定正整数n和k,计算 (k%1)+(k%1)+...+k%n 的值
+//题解: 1.注意到,k%i=k-k/i*i,故本题可转化为n*k-∑(k/i*i)
+        2.对于任意整数1<=x<=k,设g(x)=k/(k/x)=x,显然f(x)=k/x单调递减
+          故  k/g(x)=f(x)=k/x
+        3.对任意的1<=x<=k, k/x最多有2sqrt(k)个不同的值,这是因为当x<=sqrt(k)时,x只有sqrt(k)种选择,
+          故k/x最多只有sqrt(k)个不同的值,而当x>sqrt(k)时,k/x<sqrt(k),故k/x也最多只有sqrt(k)个不同的值
+        4.综上所述,直接用等差公式求和计算
+//代码:
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <ctime>
+#include <iostream>
+#include <algorithm>
+#include <queue>
+#include <map>
+#include <vector>
+using namespace std;
+#define pii pair<int,int>
+#define inf 0x3f3f3f3f
+#define ll long long
+
+
+ll n,k,ans;
+int main()
+{
+
+    scanf("%lld%lld",&n,&k);
+    ans=n*k;
+    for(ll x=1,gx;x<=n;x=gx+1)
+    {
+        gx=k/x?min(k/(k/x),n):n;
+        ans-=(k/x)*(x+gx)*(gx-x+1)/2;
+    }
+    printf("%lld\n",ans);
+}
