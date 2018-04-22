@@ -1,5 +1,3 @@
-
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -21,74 +19,79 @@ using namespace std;
 #define ls(x) (x)<<1
 #define rs(x) (x)<<1|1
 const int N=1e6+7;
-ll tre[N<<2],tg[N<<2];
-inline void pu(int x)
+ll mod;
+struct node
 {
-    tre[x]=tre[ls(x)]+tre[rs(x)];
+    int l,r;
+    ll v,add,mul;   //标记
+}tre[N<<2];
+ll bd(int x,int l,int r)
+{
+    tre[x]=node{l,r,0,0,1}; //初始化
+    if(l==r){scanf("%lld",&tre[x].v);return tre[x].v%=mod;}
+    int m=tre[x].l+tre[x].r>>1;
+    return tre[x].v=(bd(ls(x),l,m)+bd(rs(x),m+1,r))%mod;
 }
-void build(int x,int l,int r)
+void dn(int x)
 {
-    tg[x]=0;
-    if(l==r){scanf("%lld",tre+x);return;}
-    int m=l+r>>1;
-    build(ls(x),l,m);
-    build(rs(x),m+1,r);
-    pu(x);
+    tre[ls(x)].add=(tre[x].add+tre[ls(x)].add*tre[x].mul)%mod;
+    tre[rs(x)].add=(tre[x].add+tre[rs(x)].add*tre[x].mul)%mod;
+    tre[ls(x)].mul=(tre[x].mul*tre[ls(x)].mul)%mod;
+    tre[rs(x)].mul=(tre[x].mul*tre[rs(x)].mul)%mod;
+    tre[ls(x)].v=(tre[ls(x)].v*tre[x].mul+tre[x].add*(tre[ls(x)].r-tre[ls(x)].l+1))%mod;
+    tre[rs(x)].v=(tre[rs(x)].v*tre[x].mul+tre[x].add*(tre[rs(x)].r-tre[rs(x)].l+1))%mod;
+    tre[x].add=0;
+    tre[x].mul=1;
 }
-inline void fg(int x,int l,int r,ll v)
+ll qry(int x,int l,int r)
 {
-    tg[x]+=v;tre[x]+=v*(r-l+1);
+    dn(x);
+    if(l<=tre[x].l&&r>=tre[x].r)return tre[x].v%mod;
+    ll ans=0;
+    int m=tre[x].l+tre[x].r>>1;
+    if(l<=m)ans=(ans+qry(ls(x),l,r))%mod;
+    if(r>m)ans=(ans+qry(rs(x),l,r))%mod;
+    return ans%mod;
 }
-inline void pd(int x,int l,int r)
+void ud(int x,int l,int r,int k,ll v)
 {
-    int m=l+r>>1;
-    fg(ls(x),l,m,tg[x]);
-    fg(rs(x),m+1,r,tg[x]);
-    tg[x]=0;
-}
-inline void ud(int cl,int cr,int l,int r,int x,ll v)
-{
-    //[cl,cr]修改的区间,[l,r]当前节点所储存的区间,x当前节点
-    if(cl<=l&&cr>=r)
+    dn(x);
+    if(k==1&&l<=tre[x].l&&r>=tre[x].r)  //区间乘
     {
-        tg[x]+=v;
-        tre[x]+=v*(r-l+1);
+        tre[x].mul=tre[x].mul*v%mod;
+        tre[x].add=tre[x].add*v%mod;
+        tre[x].v=tre[x].v*tre[x].mul%mod;
         return;
     }
-    pd(x,l,r);
-    int m=l+r>>1;
-    if(cl<=m)ud(cl,cr,l,m,ls(x),v);
-    if(cr>m)ud(cl,cr,m+1,r,rs(x),v);
-    pu(x);
-}
-inline ll qry(int cl,int cr,int l,int r,int x)
-{
-    ll ans=0;
-    if(cl<=l&&cr>=r)return tre[x];
-    pd(x,l,r);
-    int m=l+r>>1;
-    if(cl<=m)ans+=qry(cl,cr,l,m,ls(x));
-    if(cr>m)ans+=qry(cl,cr,m+1,r,rs(x));
-    return ans;
+    if(k==2&&l<=tre[x].l&&r>=tre[x].r) //区间加
+    {
+        tre[x].add=(tre[x].add+v)%mod;
+        tre[x].v=(tre[x].v+tre[x].add*(tre[x].r-tre[x].l+1))%mod;
+        return;
+    }
+    int m=tre[x].l+tre[x].r>>1;
+    if(l<=m)ud(ls(x),l,r,k,v);
+    if(r>m)ud(rs(x),l,r,k,v);
+    tre[x].v=(tre[ls(x)].v+tre[rs(x)].v)%mod;
 }
 int main()
 {
     int n,m;
-    scanf("%d%d",&n,&m);
-    build(1,1,n);
+    scanf("%d%d%lld",&n,&m,&mod);
+    bd(1,1,n);
     int a,b,c;
     ll d;
     while(m--)
     {
         scanf("%d%d%d",&a,&b,&c);
-        if(a==1)
+        if(a==3)
         {
-            scanf("%lld",&d);
-            ud(b,c,1,n,1,d);
+            printf("%lld\n",qry(1,b,c));
         }
         else
         {
-            printf("%lld\n",qry(b,c,1,n,1));
+            scanf("%lld",&d);
+            ud(1,b,c,a,d);
         }
     }
 }
